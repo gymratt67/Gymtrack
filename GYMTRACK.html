@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<title>Gym Tracker</title>
+<style>
+:root{--bg:#080a0d;--panel:#11151a;--panel2:#171c22;--line:#242b33;--text:#f4f7fa;--muted:#8e99a6;--accent:#6ee7a8;--accent2:#4ade80;--danger:#ff6b6b}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}button{cursor:pointer}
+.app{min-height:100vh;display:flex}
+aside{width:245px;background:#0d1014;border-right:1px solid var(--line);padding:24px 16px;position:fixed;inset:0 auto 0 0}
+.logo{font-size:25px;font-weight:900;letter-spacing:-1px;margin:4px 10px 30px}.logo span{color:var(--accent)}
+nav button{width:100%;border:0;background:transparent;color:var(--muted);padding:14px 14px;text-align:left;border-radius:12px;margin:3px 0;font-weight:750}
+nav button.active,nav button:hover{background:var(--panel2);color:var(--text)}
+main{margin-left:245px;width:calc(100% - 245px);padding:32px;max-width:1500px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
+h1{margin:0;font-size:32px;letter-spacing:-1px}.subtitle{color:var(--muted);margin-top:5px}
+.view{display:none}.view.active{display:block}
+.card{background:linear-gradient(145deg,var(--panel),#0f1318);border:1px solid var(--line);border-radius:18px;padding:22px}
+.today{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:20px}
+.today h2{margin:0 0 5px}.today p{margin:0;color:var(--muted)}
+.primary{border:0;background:var(--accent);color:#06120b;padding:14px 20px;border-radius:13px;font-weight:900;min-width:190px}
+.primary.done{background:#25332b;color:var(--accent)}
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px}
+.stat strong{display:block;font-size:28px;margin-top:5px}.label{color:var(--muted);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.yearbox{overflow:auto}.yeargrid{display:grid;grid-template-columns:42px repeat(53,minmax(13px,1fr));gap:5px;min-width:900px}
+.yeargrid .daylabel{font-size:11px;color:var(--muted);display:flex;align-items:center;font-weight:800}
+.dot{width:13px;height:13px;border-radius:50%;background:#242a31;margin:auto}.dot.done{background:var(--accent);box-shadow:0 0 8px #6ee7a855}.dot.today{outline:2px solid white;outline-offset:2px}
+.legend{display:flex;gap:15px;color:var(--muted);font-size:12px;margin-top:15px}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;background:#242a31;margin-right:5px}.legend i.g{background:var(--accent)}
+.daybar{display:flex;gap:8px;overflow:auto;margin-bottom:20px}.daybar button{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:10px 14px;border-radius:11px;font-weight:800;white-space:nowrap}.daybar button.active{background:var(--accent);color:#06120b;border-color:var(--accent)}
+.exercise-list{display:grid;gap:10px}.exercise{display:flex;justify-content:space-between;align-items:center;padding:16px 17px;background:var(--panel2);border:1px solid var(--line);border-radius:13px}.exercise small{color:var(--muted);display:block;margin-top:4px}.tag{font-size:12px;color:var(--accent);font-weight:900}
+.prgrid{display:grid;gap:16px}.prrow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.prrow.two{grid-template-columns:repeat(2,1fr)}.muscle h3{margin:0 0 12px}.pritem{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line);gap:10px}.pritem span{font-size:14px}.pritem input{width:82px;background:#0b0e12;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px;text-align:right}.unit{color:var(--muted);font-size:12px}
+@media(max-width:850px){.home-grid{grid-template-columns:1fr}aside{position:fixed;top:auto;bottom:0;left:0;width:100%;height:72px;padding:8px;z-index:10;border-right:0;border-top:1px solid var(--line)}.logo{display:none}nav{display:grid;grid-template-columns:repeat(4,1fr);height:100%}nav button{text-align:center;padding:8px;font-size:12px;margin:0}.navicon{display:block;font-size:18px;margin-bottom:2px}main{margin:0;width:100%;padding:20px 15px 95px}header{margin-bottom:18px}h1{font-size:27px}.today{display:block}.primary{width:100%;margin-top:15px}.stats{grid-template-columns:repeat(2,1fr)}.prrow,.prrow.two{grid-template-columns:1fr}.card{padding:17px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside><div class="logo">GYM<span>.</span></div><nav>
+<button class="active" data-view="inicio"><span class="navicon">⌂</span>Inicio</button>
+<button data-view="rutina"><span class="navicon">▦</span>Rutina</button>
+<button data-view="prs"><span class="navicon">🏆</span>PRs</button>
+<button data-view="calendario"><span class="navicon">📅</span>Calendario</button>
+</nav></aside>
+<main>
+<header><div><h1 id="title">Inicio</h1><div class="subtitle" id="dateText"></div></div></header>
+
+<section id="inicio" class="view active">
+<div class="today">
+  <div class="card" style="flex:1">
+    <div class="label">HOY</div>
+    <h2 id="todayWorkout"></h2>
+    <p id="todayDesc"></p>
+  </div>
+  
+</div>
+<div class="home-grid">
+  <div class="card">
+    <div class="label" id="homeRoutineLabel"></div>
+    <h2 style="margin:6px 0 18px">Rutina de hoy</h2>
+    <div id="homeExerciseList" class="exercise-list"></div>
+  </div>
+  <div class="card">
+    <div class="label">PESOS DE HOY</div>
+    <h2 style="margin:6px 0 18px">Mis pesos</h2>
+    <div id="homeWeightList" class="exercise-list"></div>
+  </div>
+</div>
+</section></section>
+
+<section id="rutina" class="view">
+<div class="daybar" id="routineDays"></div>
+<div class="card"><div class="label" id="routineLabel"></div><h2 id="routineTitle" style="margin:6px 0 18px"></h2><div id="exerciseList" class="exercise-list"></div></div>
+</section>
+
+<section id="prs" class="view">
+<div class="card"><div class="label">TUS PESOS · SE GUARDAN AUTOMÁTICAMENTE</div><h2 style="margin:6px 0 20px">PRs</h2><div id="prGrid" class="prgrid"></div></div>
+</section>
+
+<section id="calendario" class="view">
+<div class="card yearbox">
+  <div class="today" style="margin-bottom:18px">
+    <div><div class="label">REGISTRO DE ENTRENAMIENTO</div><h2 style="margin:5px 0 0">¿Has entrenado hoy?</h2><p style="margin:5px 0 0;color:var(--muted)">Marca el día desde aquí.</p></div>
+    <button id="attendance" class="primary">✓ HE IDO HOY</button>
+  </div>
+  <div class="label" style="margin-bottom:15px">ASISTENCIA · <span id="calendarYear"></span></div>
+  <div id="yearGrid" class="yeargrid"></div>
+  <div class="legend"><span><i class="g"></i>Entrenado</span><span><i></i>No entrenado</span></div>
+</div>
+</section>
+</main></div>
+<script>
+const routine=[
+{day:"Lunes",title:"Pecho · Tríceps · Hombro",groups:[
+["Pecho",["Peck deck","Press de pecho convergente","Pecho en máquina con peso libre"]],
+["Tríceps",["Press katana en polea","Tríceps hacia abajo en polea"]],
+["Hombro",["Elevaciones laterales","Press militar"]]]},
+{day:"Martes",title:"Espalda · Bíceps",groups:[
+["Espalda",["Remo en T","Remo con agarre cerrado","Jalón al pecho"]],
+["Bíceps",["Curl de bíceps en polea · agarre neutro","Curl martillo con mancuernas","Curl predicador"]]]},
+{day:"Miércoles",title:"Pierna · Abdominales",groups:[
+["Pierna",["Femoral sentado","Prensa horizontal","Extensión de cuádriceps","Aductores (interior)"]],
+["Abdominales",["Abdominales en máquina"]],["Cardio",["Cardio · lunes, miércoles y viernes"]]]},
+{day:"Jueves",title:"Pecho · Tríceps · Hombro",same:0},
+{day:"Viernes",title:"Espalda · Bíceps",same:1},
+{day:"Sábado",title:"Pierna · Abdominales",same:2},
+{day:"Domingo",title:"Descanso",groups:[]}
+];
+routine[3].groups=routine[0].groups;routine[4].groups=routine[1].groups;routine[5].groups=routine[2].groups;
+
+const key='gymTrackerAttendanceV1',prKey='gymTrackerPRsV1';
+let attendance=JSON.parse(localStorage.getItem(key)||'[]'), prs=JSON.parse(localStorage.getItem(prKey)||'{}');
+const names=["L","M","X","J","V","S","D"];
+const today=new Date(), year=today.getFullYear(), todayKey=fmt(today);
+function fmt(d){return d.toISOString().slice(0,10)}
+function dayIndex(d){return (d.getDay()+6)%7}
+function save(){localStorage.setItem(key,JSON.stringify(attendance));renderHome()}
+function renderHome(){
+ const idx=dayIndex(today), r=routine[idx];
+ document.getElementById('todayWorkout').textContent=r.title;
+ document.getElementById('todayDesc').textContent=idx===6?'Hoy toca descanso.':'Estos son tus ejercicios, pesos y el cardio programado para hoy.';
+ document.getElementById('dateText').textContent=today.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+ const btn=document.getElementById('attendance'), done=attendance.includes(todayKey);
+ btn.textContent=done?'✓ ENTRENAMIENTO REGISTRADO':'✓ HE IDO HOY';btn.classList.toggle('done',done);
+ renderHomeWorkout(idx);
+ renderHomeWeights(idx);
+}
+function renderHomeWorkout(day){
+ const r=routine[day];
+ document.getElementById('homeRoutineLabel').textContent=r.day.toUpperCase();
+ const list=document.getElementById('homeExerciseList');list.innerHTML='';
+ if(day===6){list.innerHTML='<div class="exercise"><div><b>Descanso</b><small>Recuperación</small></div><span class="tag">REST</span></div>';return}
+ r.groups.forEach(g=>g[1].forEach(e=>{
+   let div=document.createElement('div');div.className='exercise';
+   div.innerHTML='<div><b>'+e+'</b><small>'+g[0]+'</small></div><span class="tag">'+(g[0]==='Cardio'?'CARDIO':'3×10 / 3×12')+'</span>';
+   list.appendChild(div);
+ }))
+}
+function renderHomeWeights(day){
+ const r=routine[day], list=document.getElementById('homeWeightList');list.innerHTML='';
+ if(day===6){list.innerHTML='<div class="exercise"><div><b>Sin entrenamiento</b><small>Domingo</small></div></div>';return}
+ r.groups.forEach(g=>g[1].forEach(e=>{
+   if(g[0]==='Cardio') return;
+   let div=document.createElement('div');div.className='exercise';
+   const val=prs[e]??'';
+   div.innerHTML='<div><b>'+e+'</b><small>'+g[0]+'</small></div><span><input inputmode="decimal" type="number" step="0.5" value="'+val+'" data-home-ex="'+e+'" placeholder="0" style="width:72px;background:#0b0e12;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px;text-align:right"><span class="unit"> kg</span></span>';
+   list.appendChild(div);
+ }))
+ list.querySelectorAll('input').forEach(inp=>inp.addEventListener('change',()=>{
+   prs[inp.dataset.homeEx]=inp.value;localStorage.setItem(prKey,JSON.stringify(prs));renderPRs();
+ }))
+}
+function renderYear(){
+ document.getElementById('calendarYear').textContent=year;
+ const grid=document.getElementById('yearGrid');grid.innerHTML='';
+ for(let i=0;i<7;i++){const lab=document.createElement('div');lab.className='daylabel';lab.textContent=names[i];grid.appendChild(lab);
+   for(let w=0;w<53;w++){let x=document.createElement('div');x.className='dot';let dt=new Date(year,0,1);let offset=(7-(dt.getDay()+6)%7)%7;dt.setDate(1+w*7+i-offset);
+    if(dt.getFullYear()===year){let k=fmt(dt);if(attendance.includes(k))x.classList.add('done');if(k===todayKey)x.classList.add('today');x.title=dt.toLocaleDateString('es-ES')}
+    else x.style.visibility='hidden';grid.appendChild(x)}
+ }
+}
+function renderRoutine(day=dayIndex(today)){
+ document.querySelectorAll('#routineDays button').forEach((b,i)=>b.classList.toggle('active',i===day));
+ const r=routine[day];document.getElementById('routineLabel').textContent=r.day.toUpperCase();
+ document.getElementById('routineTitle').textContent=r.title;
+ const list=document.getElementById('exerciseList');list.innerHTML='';
+ if(day===6){list.innerHTML='<div class="exercise"><div><b>Descanso</b><small>Recuperación</small></div><span class="tag">REST</span></div>';return}
+ r.groups.forEach(g=>g[1].forEach((e,j)=>{let div=document.createElement('div');div.className='exercise';div.innerHTML='<div><b>'+e+'</b><small>'+g[0]+'</small></div><span class="tag">'+(g[0]==='Cardio'?'CARDIO':'3×10 / 3×12')+'</span>';list.appendChild(div)}))
+}
+const prGroups=[["Pecho",["Peck deck","Press de pecho convergente","Pecho en máquina con peso libre"]],["Tríceps",["Press katana en polea","Tríceps hacia abajo en polea"]],["Hombro",["Elevaciones laterales","Press militar"]],["Espalda",["Remo en T","Remo con agarre cerrado","Jalón al pecho"]],["Bíceps",["Curl de bíceps en polea · agarre neutro","Curl martillo con mancuernas","Curl predicador"]],["Pierna",["Femoral sentado","Prensa horizontal","Extensión de cuádriceps","Aductores (interior)"]],["Abdominales",["Abdominales en máquina"]]];
+function renderPRs(){const wrap=document.getElementById('prGrid');wrap.innerHTML='';
+ for(let row=0;row<3;row++){let rowEl=document.createElement('div');rowEl.className='prrow '+(row===2?'two':'');let slice=row===0?prGroups.slice(0,3):row===1?prGroups.slice(3,5):prGroups.slice(5);
+ slice.forEach(([group,exs])=>{let card=document.createElement('div');card.className='card muscle';card.innerHTML='<h3>'+group+'</h3>';exs.forEach(e=>{let item=document.createElement('div');item.className='pritem';let val=prs[e]??'';item.innerHTML='<span>'+e+'</span><span><input inputmode="decimal" type="number" step="0.5" value="'+val+'" data-ex="'+e+'" placeholder="0"><span class="unit"> kg</span></span>';card.appendChild(item)});rowEl.appendChild(card)});wrap.appendChild(rowEl)}
+ wrap.querySelectorAll('input').forEach(inp=>inp.addEventListener('change',()=>{prs[inp.dataset.ex]=inp.value;localStorage.setItem(prKey,JSON.stringify(prs))}))
+}
+document.getElementById('attendance').onclick=()=>{if(!attendance.includes(todayKey)){attendance.push(todayKey);save()}};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(b.dataset.view).classList.add('active');document.getElementById('title').textContent=b.textContent.trim();if(b.dataset.view==='rutina')renderRoutine();if(b.dataset.view==='prs')renderPRs()});
+const rd=document.getElementById('routineDays');routine.forEach((r,i)=>{let b=document.createElement('button');b.textContent=r.day.slice(0,3);b.onclick=()=>renderRoutine(i);rd.appendChild(b)});
+renderHome();renderRoutine();renderYear();
+</script>
+</body>
+</html>
